@@ -52,7 +52,7 @@ namespace KubeClient.Tests
                     {
                         Reason = "NotFound"
                     }),
-                    WellKnownMediaTypes.Json
+                    mediaType: WellKnownMediaTypes.Json
                 );
             }));
 
@@ -120,7 +120,7 @@ namespace KubeClient.Tests
                             Namespace = "default"
                         }
                     }),
-                    WellKnownMediaTypes.Json
+                    mediaType: WellKnownMediaTypes.Json
                 );
             }));
 
