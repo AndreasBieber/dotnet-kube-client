@@ -1,8 +1,6 @@
 ﻿using HTTPlease;
-using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 using Serilog;
 using System;
 using System.Collections.Generic;
@@ -46,7 +44,8 @@ namespace KubeClient.Samples.ConfigFromConfigMap
                 if (options.Verbose)
                     clientOptions.LogPayloads = true;
 
-                KubeApiClient client = KubeApiClient.Create(clientOptions, loggerFactory);
+
+                var client = (KubeApiClient) new KubeApiClientFactory(new HttpClientFactory(loggerFactory)).Create(clientOptions);
 
                 Log.Information("Checking for existing ConfigMap...");
                 ConfigMapV1 configMap = await client.ConfigMapsV1().Get(configMapName, configMapNamespace);

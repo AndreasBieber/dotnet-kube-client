@@ -1,5 +1,6 @@
 using System;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 
 namespace KubeClient.Extensions.Configuration
 {
@@ -37,7 +38,7 @@ namespace KubeClient.Extensions.Configuration
             if (configurationBuilder == null)
                 throw new ArgumentNullException(nameof(configurationBuilder));
             
-            KubeApiClient client = KubeApiClient.Create(clientOptions);
+            var client = (KubeApiClient) new KubeApiClientFactory(new HttpClientFactory(new LoggerFactory())).Create(clientOptions);
 
             return configurationBuilder.AddKubeConfigMap(client, configMapName, kubeNamespace, sectionName, reloadOnChange);
         }
@@ -111,8 +112,7 @@ namespace KubeClient.Extensions.Configuration
             if (configurationBuilder == null)
                 throw new ArgumentNullException(nameof(configurationBuilder));
             
-            KubeApiClient client = KubeApiClient.Create(clientOptions);
-
+            var client = (KubeApiClient) new KubeApiClientFactory(new HttpClientFactory(new LoggerFactory())).Create(clientOptions);
             return configurationBuilder.AddKubeSecret(client, secretName, kubeNamespace, sectionName, reloadOnChange);
         }
 

@@ -34,7 +34,7 @@ namespace KubeClient
         ///     The default Kubernetes namespace to use when no specific namespace is specified.
         /// </summary>
         public string KubeNamespace { get; set; } = "default";
-        
+
         /// <summary>
         ///     The base address of the Kubernetes API end-point.
         /// </summary>
@@ -124,7 +124,8 @@ namespace KubeClient
         {
             string kubeServiceHost = Environment.GetEnvironmentVariable("KUBERNETES_SERVICE_HOST");
             if (String.IsNullOrWhiteSpace(kubeServiceHost))
-                throw new InvalidOperationException("KubeApiClient.CreateFromPodServiceAccount can only be called when running in a Kubernetes Pod (KUBERNETES_SERVICE_HOST environment variable is not defined).");
+                throw new InvalidOperationException(
+                    "KubeApiClient.CreateFromPodServiceAccount can only be called when running in a Kubernetes Pod (KUBERNETES_SERVICE_HOST environment variable is not defined).");
 
             const string apiEndPoint = "https://kubernetes/";
             string accessToken = File.ReadAllText("/var/run/secrets/kubernetes.io/serviceaccount/token");
@@ -139,5 +140,75 @@ namespace KubeClient
                 CertificationAuthorityCertificate = kubeCACertificate
             };
         }
+
+        /// <summary>
+        ///     Create <see cref="KubeClientOptions"/> without authentication.
+        /// </summary>
+        /// <param name="apiEndPoint">
+        ///     The base address for the Kubernetes API end-point.
+        /// </param>
+        /// <returns>
+        ///     The configured <see cref="KubeClientOptions"/>.
+        /// </returns>
+        public static KubeClientOptions Create(string apiEndPoint)
+            => Create(new Uri(apiEndPoint));
+
+        /// <summary>
+        ///     Create <see cref="KubeClientOptions"/> without authentication.
+        /// </summary>
+        /// <param name="apiEndPoint">
+        ///     The base address for the Kubernetes API end-point.
+        /// </param>
+        /// <returns>
+        ///     The configured <see cref="KubeClientOptions"/>.
+        /// </returns>
+        public static KubeClientOptions Create(Uri apiEndPoint)
+            => new KubeClientOptions {ApiEndPoint = apiEndPoint};
+
+        /// <summary>
+        ///     Create <see cref="KubeClientOptions"/> using a bearer token for authentication.
+        /// </summary>
+        /// <param name="apiEndPoint">
+        ///     The base address for the Kubernetes API end-point.
+        /// </param>
+        /// <param name="accessToken">
+        ///     The access token to use for authentication to the API.
+        /// </param>
+        /// <param name="expectServerCertificate">
+        ///     An optional server certificate to expect.
+        /// </param>
+        /// <returns>
+        ///     The configured <see cref="KubeClientOptions"/>.
+        /// </returns>
+        public static KubeClientOptions Create(string apiEndPoint, string accessToken, X509Certificate2 expectServerCertificate = null)
+            => new KubeClientOptions
+            {
+                ApiEndPoint = new Uri(apiEndPoint),
+                AccessToken = accessToken,
+                CertificationAuthorityCertificate = expectServerCertificate
+            };
+
+        /// <summary>
+        ///     Create <see cref="KubeClientOptions"/> using an X.509 certificate for client authentication.
+        /// </summary>
+        /// <param name="apiEndPoint">
+        ///     The base address for the Kubernetes API end-point.
+        /// </param>
+        /// <param name="clientCertificate">
+        ///     The X.509 certificate to use for client authentication.
+        /// </param>
+        /// <param name="expectServerCertificate">
+        ///     An optional server certificate to expect.
+        /// </param>
+        /// <returns>
+        ///     The configured <see cref="KubeClientOptions"/>.
+        /// </returns>
+        public static KubeClientOptions Create(string apiEndPoint, X509Certificate2 clientCertificate, X509Certificate2 expectServerCertificate = null)
+            => new KubeClientOptions
+            {
+                ApiEndPoint = new Uri(apiEndPoint),
+                ClientCertificate = clientCertificate,
+                CertificationAuthorityCertificate = expectServerCertificate
+            };
     }
 }

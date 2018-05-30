@@ -29,11 +29,6 @@ namespace KubeClient
         HttpClient Http { get; }
 
         /// <summary>
-        ///     The <see cref="ILoggerFactory"/> used to create loggers for client components.
-        /// </summary>
-        ILoggerFactory LoggerFactory { get; }
-
-        /// <summary>
         ///     Get a copy of the <see cref="KubeClientOptions"/> used to configure the client.
         /// </summary>
         /// <returns>

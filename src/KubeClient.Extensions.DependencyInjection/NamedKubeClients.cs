@@ -1,5 +1,3 @@
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
 
@@ -11,24 +9,26 @@ namespace KubeClient
     public class NamedKubeClients
         : INamedKubeClients
     {
+        private readonly IOptionsMonitor<KubeClientOptions> _options;
+        private readonly IKubeApiClientFactory _apiClientFactory;
+
         /// <summary>
         ///     Create a new <see cref="NamedKubeClients"/> service.
         /// </summary>
-        /// <param name="serviceProvider">
-        ///     The underlying service provider used to resolve required services.
+        /// <param name="options">
+        ///     The <see cref="KubeClientOptions"/>. 
         /// </param>
-        public NamedKubeClients(IServiceProvider serviceProvider)
+        /// <param name="apiClientFactory">
+        ///     Factory for creating <see cref="IKubeApiClient"/> on demand.
+        /// </param>
+        public NamedKubeClients(IOptionsMonitor<KubeClientOptions> options, IKubeApiClientFactory apiClientFactory)
         {
-            if (serviceProvider == null)
-                throw new ArgumentNullException(nameof(serviceProvider));
-            
-            ServiceProvider = serviceProvider;
-        }
+            if (options == null)
+                throw new ArgumentNullException(nameof(options));
 
-        /// <summary>
-        ///     The underlying service provider used to resolve required services.
-        /// </summary>
-        public IServiceProvider ServiceProvider { get; }
+            _options = options;
+            _apiClientFactory = apiClientFactory;
+        }
 
         /// <summary>
         ///     Resolve the Kubernetes API client with the specified name.
@@ -39,18 +39,16 @@ namespace KubeClient
         /// <returns>
         ///     The resolved <see cref="KubeApiClient"/>.
         /// </returns>
-        public KubeApiClient Get(string name)
+        public IKubeApiClient Get(string name)
         {
             if (String.IsNullOrWhiteSpace(name))
                 throw new ArgumentException("Argument cannot be null, empty, or entirely composed of whitespace: 'name'.", nameof(name));
-            
-            KubeClientOptions options = ServiceProvider.GetRequiredService<IOptionsMonitor<KubeClientOptions>>().Get(name);
+
+            KubeClientOptions options = _options.Get(name);
             if (options == null)
                 throw new InvalidOperationException($"Cannot resolve a {nameof(KubeClientOptions)} instance named '{name}'.");
 
-            return KubeApiClient.Create(options,
-                loggerFactory: ServiceProvider.GetService<ILoggerFactory>()
-            );
+            return _apiClientFactory.Create(options);
         }
     }
 }

@@ -2,13 +2,14 @@ using HTTPlease;
 using HTTPlease.Diagnostics;
 using HTTPlease.Formatters;
 using HTTPlease.Testability;
-using HTTPlease.Testability.Mocks;
 using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using Moq;
 using Xunit;
 using Newtonsoft.Json;
 
@@ -22,11 +23,16 @@ namespace KubeClient.Tests
     /// </summary>
     public class LoggingTests
     {
+        private readonly IOptions<KubeClientOptions> _clientOptions;
+        private readonly Mock<IHttpClientFactory> _httpClientFactoryMock;
+
         /// <summary>
         ///     Create a new <see cref="KubeApiClient"/> logging test suite.
         /// </summary>
         public LoggingTests()
         {
+            _clientOptions  = new OptionsWrapper<KubeClientOptions>(new KubeClientOptions("http://localhost:1234"));
+            _httpClientFactoryMock = new Mock<IHttpClientFactory>();
         }
 
         /// <summary>
@@ -55,9 +61,9 @@ namespace KubeClient.Tests
                     mediaType: WellKnownMediaTypes.Json
                 );
             }));
-
-            KubeClientOptions clientOptions = new KubeClientOptions("http://localhost:1234");
-            using (KubeApiClient kubeClient = KubeApiClient.Create(httpClient, clientOptions))
+            
+            _httpClientFactoryMock.Setup(mock => mock.Create(It.IsAny<KubeClientOptions>())).Returns(httpClient);
+            using (var kubeClient = new KubeApiClient(_clientOptions, _httpClientFactoryMock.Object))
             {
                 PodV1 pod = await kubeClient.PodsV1().Get(name: "foo");
                 Assert.Null(pod);
@@ -124,8 +130,8 @@ namespace KubeClient.Tests
                 );
             }));
 
-            KubeClientOptions clientOptions = new KubeClientOptions("http://localhost:1234");
-            using (KubeApiClient kubeClient = KubeApiClient.Create(httpClient, clientOptions))
+            _httpClientFactoryMock.Setup(mock => mock.Create(It.IsAny<KubeClientOptions>())).Returns(httpClient);
+            using (var kubeClient = new KubeApiClient(_clientOptions, _httpClientFactoryMock.Object))
             {
                 PodV1 pod = await kubeClient.PodsV1().Get(name: "foo");
                 Assert.NotNull(pod);

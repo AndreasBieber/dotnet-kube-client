@@ -8,6 +8,8 @@
     using System.Net.WebSockets;
     using System.Text;
     using System.Threading.Tasks;
+    using Microsoft.Extensions.Options;
+    using Moq;
     using Xunit.Abstractions;
     using Xunit;
 
@@ -79,13 +81,16 @@
             /// </returns>
             protected KubeApiClient CreateTestClient()
             {
-                return KubeApiClient.Create(new KubeClientOptions
-                {
-                    ApiEndPoint = BaseAddress,
-                    KubeNamespace = "default"
+                var options = new OptionsWrapper<KubeClientOptions>(
+                    new KubeClientOptions
+                    {
+                        ApiEndPoint = BaseAddress,
+                        KubeNamespace = "default"
 
-                    // No authentication.
-                }, LoggerFactory);
+                        // No authentication.
+                    });
+                
+                return new KubeApiClient(options, new HttpClientFactory(new LoggerFactory()));
             }
 
             /// <summary>

@@ -1,4 +1,3 @@
-using HTTPlease;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -73,9 +72,7 @@ namespace KubeClient
                 inputStreamIndexes = new byte[0];
             
             return podClient.ExecAndConnectRaw(podName, command, stdin, stdout, stderr, tty, container, kubeNamespace, cancellation)
-                .Multiplexed(inputStreamIndexes, outputStreamIndexes,
-                    loggerFactory: podClient.KubeClient.LoggerFactory
-                );
+                .Multiplexed(inputStreamIndexes, outputStreamIndexes);
         }
 
         /// <summary>

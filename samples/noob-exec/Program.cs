@@ -49,7 +49,7 @@ namespace KubeClient.Samples.NoobExec
                     defaultKubeNamespace: options.KubeNamespace
                 );
 
-                using (KubeApiClient client = KubeApiClient.Create(clientOptions, loggers))
+                using (var client = (KubeApiClient) new KubeApiClientFactory(new HttpClientFactory(loggers)).Create(clientOptions))
                 {
                     Log.LogInformation("Finding target pod...");
 

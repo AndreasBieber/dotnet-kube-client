@@ -1,6 +1,4 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using System;
 using System.Linq;
 
@@ -28,24 +26,10 @@ namespace KubeClient
             if (usePodServiceAccount)
             {
                 // When running inside Kubernetes, use pod-level service account (e.g. access token from mounted Secret).
-                services.AddScoped<KubeApiClient>(serviceProvider =>
-                {
-                    return KubeApiClient.CreateFromPodServiceAccount(
-                        loggerFactory: serviceProvider.GetService<ILoggerFactory>()
-                    );
-                });
+                services.AddScoped(serviceProvider => KubeClientOptions.FromPodServiceAccount());
             }
-            else
-            {
-                services.AddScoped<KubeApiClient>(serviceProvider =>
-                {
-                    KubeClientOptions options = serviceProvider.GetRequiredService<IOptions<KubeClientOptions>>().Value;
-
-                    return KubeApiClient.Create(options,
-                        loggerFactory: serviceProvider.GetService<ILoggerFactory>()
-                    );
-                });
-            }
+            
+            services.AddScoped<IKubeApiClient, KubeApiClient>();
         }
 
         /// <summary>
@@ -67,12 +51,7 @@ namespace KubeClient
 
             options.EnsureValid();
 
-            services.AddScoped<KubeApiClient>(serviceProvider =>
-            {
-                return KubeApiClient.Create(options,
-                    loggerFactory: serviceProvider.GetService<ILoggerFactory>()
-                );
-            });
+            services.AddScoped<IKubeApiClient, KubeApiClient>();
         }
 
         /// <summary>
