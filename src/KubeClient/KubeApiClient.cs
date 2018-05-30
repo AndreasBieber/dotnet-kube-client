@@ -15,7 +15,7 @@ namespace KubeClient
     ///     Client for the Kubernetes API.
     /// </summary>
     public sealed class KubeApiClient
-        : IKubeApiClient, IDisposable
+        : IKubeApiClient
     {
         /// <summary>
         ///     Kubernetes resource clients.
@@ -34,7 +34,7 @@ namespace KubeClient
         /// <param name="loggerFactory">
         ///     The <see cref="ILoggerFactory"/> used to create loggers for client components, or null to use a no-op logger factory.
         /// </param>
-        KubeApiClient(HttpClient httpClient, KubeClientOptions options, ILoggerFactory loggerFactory)
+        private KubeApiClient(HttpClient httpClient, KubeClientOptions options, ILoggerFactory loggerFactory)
         {
             if (httpClient == null)
                 throw new ArgumentNullException(nameof(httpClient));
